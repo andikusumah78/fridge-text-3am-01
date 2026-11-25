@@ -20,8 +20,15 @@ def main():
     validate_line(LINE)
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, "entry.txt"), "w", encoding="utf-8") as f:
+    out_path = os.path.join(out_dir, "entry.txt")
+    with open(out_path, "w", encoding="utf-8") as f:
         f.write(LINE)
+    # Verify the written file round-trips byte-identical: the gate reads
+    # exactly what is on disk, so a silent write failure must not pass.
+    with open(out_path, "rb") as f:
+        written = f.read()
+    assert written.decode("utf-8") == LINE, "entry.txt does not match LINE"
+    assert written == LINE.encode("utf-8"), "entry.txt is not byte-identical"
 
 
 if __name__ == "__main__":
